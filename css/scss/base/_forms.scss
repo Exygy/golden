@@ -1,4 +1,4 @@
-@include cornerstone-forms;
+@include cornerstone-forms
 
 .checkbox {
   @include cornerstone-checkbox;
@@ -6,4 +6,8 @@
 
 .radio {
   @include cornerstone-radio;
+}
+
+select {
+  @include form-select;
 }
