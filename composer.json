@@ -1,0 +1,13 @@
+{
+    "name": "Exygy/golden",
+    "description": "Parent theme for SF COIT & beyond!",
+    "type": "drupal-theme",
+    "license": "GPL3",
+    "authors": [
+        {
+            "name": "Exygy",
+            "email": "dev@exygy.com"
+        }
+    ],
+    "require": {}
+}

@@ -1,0 +1,9 @@
+name: Golden
+type: theme
+description: Parent theme for SF COIT & beyond! Based on classy, not stable.
+core: 8.x
+# Defines the base theme
+base theme: classy
+# Defines libraries group in which we can add css/js.
+libraries:
+  - golden/base

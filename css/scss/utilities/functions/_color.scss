@@ -1,0 +1,222 @@
+////
+/// Color function
+////
+
+/// Return a color from the color map.
+///
+/// @example scss - SCSS
+///   background-color: color(white);
+///
+/// @example css - CSS
+///   background-color: #fff;
+///
+/// @requires {variable} $colors
+
+@function color($color, $palette: ()) {
+  // First, we marge this default color palette with the cornerstone color palette we set up in `variables/color`
+  $_default-color-palette: map-merge((
+    // Branded color palette
+      primary:                      #0077da,
+      primary-darker:               #f90f90,
+      primary-darkest:              #205493,
+      primary-alt:                  #008fff,
+      primary-alt-dark:             #0067be,
+      primary-alt-darker:           #00579E,
+      primary-alt-darkest:          #004070,
+      primary-alt-light:            #ffebcc,
+      primary-alt-lightest:         #daeeff,
+      secondary:                    #00bed5,
+      secondary-dark:               #0097A8,
+      secondary-darker:             #008A99,
+      secondary-darkest:            #006E7A,
+      secondary-light:              #3CBECD,
+      secondary-lightest:           #CBEFF1,
+
+    // Base color palette
+    //
+
+      white:                        #ffffff,
+      snow:                         #f9f9f9,
+      dust:                         #f5f8f9,
+      smoke:                        #f5f5f5,
+      charcoal:                     #555555,
+      oil:                          #333333,
+      base:                         #212121,
+      black:                        #000000,
+      grey:                         #5b616b,
+      grey-dark:                    #323a45,
+      grey-medium:                  #757575,
+      grey-light:                   #aeb0b5,
+      grey-lighter:                 #d6d7d9,
+      grey-lightest:                #f1f1f1,
+      gold:                         #fdb81e,
+      gold-light:                   #f9c642,
+      gold-lighter:                 #fad980,
+      gold-lightest:                #fff1d2,
+      green:                        #2e8540,
+      green-light:                  #4aa564,
+      green-lighter:                #94bfa2,
+      green-lightest:               #e7f4e4,
+      red:                          #e31c3d,
+      red-light:                    #E7405C,
+      red-lighter:                  #EC697F,
+      red-lightest:                 #f9d2d8,
+
+    // Functional color palette
+    //
+
+      focus:                        #3e94cf,
+      visited:                      #4c2c92,
+      shadow:                rgba(#000, 0.3),
+  ), $colors);
+
+  // Then, we merge the $_default-color-palette we just merged with the palette that was specified by the mixin.
+  $_color-palette: map-merge($_default-color-palette, $palette);
+
+  // Finally, we return the requested color value from our combined merge. This allows custom color maps to be able to
+  // only specify colors that we want to specifically differ from the base map.
+  // As an example, the cornerstone color map does not include any of the generic colors, but if I created a custom map
+  // that only had a `background: #880000` value, I could still call `color: color(brand, $custom-map)`, which
+  // would return the brand value from the `$colors` map. Additionally, if I call `color: color(lime, $custom-map)`
+  // it will return the lime color from the generic palette from the default map.
+  @return map-get($_color-palette, $color);
+}
+
+// Foundation for Sites by ZURB
+// foundation.zurb.com
+// Licensed under MIT Open Source
+
+////
+/// @group functions
+////
+
+/// Finds the greatest common divisor of two integers.
+///
+/// @param {Number} $a - First number to compare.
+/// @param {Number} $b - Second number to compare.
+///
+/// @returns {Number} The greatest common divisor.
+@function gcd($a, $b) {
+  // From: http://rosettacode.org/wiki/Greatest_common_divisor#JavaScript
+  @if ($b != 0) {
+    @return gcd($b, $a % $b);
+  }
+  @else {
+    @return abs($a);
+  }
+}
+
+/// Handles decimal exponents by trying to convert them into a fraction and then use a nth-root-algorithm for parts of the calculation
+///
+/// @param {Number} $base - The base number.
+/// @param {Number} $exponent - The exponent.
+///
+/// @returns {Number} The product of the exponentiation.
+@function pow($base, $exponent, $prec: 12) {
+  @if (floor($exponent) != $exponent) {
+    $prec2 : pow(10, $prec);
+    $exponent: round($exponent * $prec2);
+    $denominator: gcd($exponent, $prec2);
+    @return nth-root(pow($base, $exponent / $denominator), $prec2 / $denominator, $prec);
+  }
+
+  $value: $base;
+  @if $exponent > 1 {
+    @for $i from 2 through $exponent {
+      $value: $value * $base;
+    }
+  }
+  @else if $exponent < 1 {
+    @for $i from 0 through -$exponent {
+      $value: $value / $base;
+    }
+  }
+
+  @return $value;
+}
+
+@function nth-root($num, $n: 2, $prec: 12) {
+  // From: http://rosettacode.org/wiki/Nth_root#JavaScript
+  $x: 1;
+
+  @for $i from 0 through $prec {
+    $x: 1 / $n * (($n - 1) * $x + ($num / pow($x, $n - 1)));
+  }
+
+  @return $x;
+}
+
+////
+/// @group functions
+////
+
+/// Checks the luminance of `$color`.
+///
+/// @param {Color} $color - Color to check the luminance of.
+///
+/// @returns {Number} The luminance of `$color`.
+@function color-luminance($color) {
+  // Adapted from: https://github.com/LeaVerou/contrast-ratio/blob/gh-pages/color.js
+  // Formula: http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+  $rgba: red($color), green($color), blue($color);
+  $rgba2: ();
+
+  @for $i from 1 through 3 {
+    $rgb: nth($rgba, $i);
+    $rgb: $rgb / 255;
+
+    $rgb: if($rgb < 0.03928, $rgb / 12.92, pow(($rgb + 0.055) / 1.055, 2.4));
+
+    $rgba2: append($rgba2, $rgb);
+  }
+
+  @return 0.2126 * nth($rgba2, 1) + 0.7152 * nth($rgba2, 2) + 0.0722 * nth($rgba2, 3);
+}
+
+/// Checks the contrast ratio of two colors.
+///
+/// @param {Color} $color1 - First color to compare.
+/// @param {Color} $color2 - Second color to compare.
+///
+/// @returns {Number} The contrast ratio of the compared colors.
+@function color-contrast($color1, $color2) {
+  // Adapted from: https://github.com/LeaVerou/contrast-ratio/blob/gh-pages/color.js
+  // Formula: http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
+  $luminance1: color-luminance($color1) + 0.05;
+  $luminance2: color-luminance($color2) + 0.05;
+  $ratio: $luminance1 / $luminance2;
+
+  @if $luminance2 > $luminance1 {
+    $ratio: 1 / $ratio;
+  }
+
+  $ratio: round($ratio * 10) / 10;
+
+  @return $ratio;
+}
+
+/// Checks the luminance of `$base`, and returns the color from `$colors` (list of colors) that has the most contrast.
+///
+/// @param {Color} $color1 - First color to compare.
+/// @param {Color} $color2 - Second color to compare.
+///
+/// @returns {Number} The contrast ratio of the compared colors.
+@function color-pick-contrast($base, $colors: ($white, $black), $tolerance: 0) {
+  $contrast: color-contrast($base, nth($colors, 1));
+  $best: nth($colors, 1);
+
+  @for $i from 2 through length($colors) {
+    $current-contrast: color-contrast($base, nth($colors, $i));
+    @if ($current-contrast - $contrast > $tolerance) {
+      $contrast: color-contrast($base, nth($colors, $i));
+      $best: nth($colors, $i);
+    }
+  }
+
+  @if ($contrast < 3) {
+    @warn "Contrast ratio of #{$best} on #{$base} is pretty bad, just #{$contrast}";
+  }
+
+  @return $best;
+}
+

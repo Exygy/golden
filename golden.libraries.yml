@@ -1,0 +1,4 @@
+base:
+  css:
+    base:
+      css/golden.min.css: { minified: true }

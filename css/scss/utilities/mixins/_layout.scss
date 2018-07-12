@@ -1,0 +1,25 @@
+@mixin centered-container {
+  @include grid-container;
+  max-width: $max-container-width;
+  margin: 0 auto;
+}
+
+@mixin row {
+  @include grid-container;
+  max-width: $max-container-width;
+  margin: 0 auto;
+}
+
+@mixin center-column {
+  float: none;
+  margin: 0 auto;
+}
+
+@mixin full-container {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
